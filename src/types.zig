@@ -52,7 +52,7 @@ pub const Class = struct {
             return false;
         }
 
-        for (self.properties.items) |property, i| {
+        for (self.properties.items, 0..) |property, i| {
             var prop1 = other.properties.items[i];
             _ = prop1;
 
@@ -138,7 +138,7 @@ pub const Class = struct {
             return false;
         }
 
-        for (self.sub_classes.items) |class, index| {
+        for (self.sub_classes.items, 0..) |class, index| {
             if (!class.eql(other.sub_classes.items[index])) {
                 return false;
             }
@@ -169,7 +169,7 @@ pub const Map = struct {
         self.allocator.destroy(self.classes);
     }
     pub fn eql(self: *const Map, other: Map) bool {
-        for (self.classes.items) |class, index| {
+        for (self.classes.items, 0..) |class, index| {
             if (!class.eql(other.classes.items[index])) {
                 return false;
             }
@@ -245,7 +245,7 @@ pub const TriangleTagArray = struct {
             return false;
         }
 
-        for (self.array) |triangle_tag, index| {
+        for (self.array, 0..) |triangle_tag, index| {
             if (triangle_tag != other.array[index]) {
                 return false;
             }
@@ -262,7 +262,7 @@ pub const IntArray = struct {
             return false;
         }
 
-        for (self.array) |int, index| {
+        for (self.array, 0..) |int, index| {
             if (int != other.array[index]) {
                 return false;
             }
@@ -279,7 +279,7 @@ pub const VertexArray = struct {
             return false;
         }
 
-        for (self.array) |vertex, index| {
+        for (self.array, 0..) |vertex, index| {
             if (!vertex.eql(other.array[index])) {
                 return false;
             }
@@ -296,7 +296,7 @@ pub const DecimalArray = struct {
             return false;
         }
 
-        for (self.array) |decimal, index| {
+        for (self.array, 0..) |decimal, index| {
             if (decimal != other.array[index]) {
                 return false;
             }
