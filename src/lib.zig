@@ -145,7 +145,7 @@ fn read_class(allocator: std.mem.Allocator, user_allocator: std.mem.Allocator, m
                 }
                 //if we have read a property name, then fill in the property value
                 else {
-                    var property_value = try parse_property_value(user_allocator, working_string.?, working_property.?.name);
+                    var property_value = try parse_property_value(user_allocator, class_name, working_string.?, working_property.?.name);
 
                     working_property.?.value = property_value;
 
@@ -211,12 +211,12 @@ const property_type_map = &[_]PropertyMapElement{
     .{ .class = "", .property_name = "startposition", .property_type = types.PropertyType.vertex },
     .{ .class = "", .property_name = "elevation", .property_type = types.PropertyType.decimal },
     .{ .class = "", .property_name = "subdiv", .property_type = types.PropertyType.boolean },
-    .{ .class = "normals", .property_name = "row0", .property_type = types.PropertyType.vertex_array }, //TODO: make row0 -> row* and parse that property
-    .{ .class = "offsets", .property_name = "row0", .property_type = types.PropertyType.vertex_array }, //TODO: ^^^
-    .{ .class = "offset_normals", .property_name = "row0", .property_type = types.PropertyType.vertex_array }, //TODO: ^^^
-    .{ .class = "distances", .property_name = "row0", .property_type = types.PropertyType.decimal_array }, //TODO: ^^^
-    .{ .class = "alphas", .property_name = "row0", .property_type = types.PropertyType.decimal_array }, //TODO: ^^^
-    .{ .class = "triangle_tags", .property_name = "row0", .property_type = types.PropertyType.triangle_tag_array }, //TODO: ^^^
+    .{ .class = "normals", .property_name = "row*", .property_type = types.PropertyType.vertex_array }, 
+    .{ .class = "offsets", .property_name = "row*", .property_type = types.PropertyType.vertex_array }, 
+    .{ .class = "offset_normals", .property_name = "row*", .property_type = types.PropertyType.vertex_array }, 
+    .{ .class = "distances", .property_name = "row*", .property_type = types.PropertyType.decimal_array }, 
+    .{ .class = "alphas", .property_name = "row*", .property_type = types.PropertyType.decimal_array }, 
+    .{ .class = "triangle_tags", .property_name = "row*", .property_type = types.PropertyType.triangle_tag_array }, 
     .{ .class = "allowed_verts", .property_name = "10", .property_type = types.PropertyType.int_array },
     .{ .class = "", .property_name = "color", .property_type = types.PropertyType.rgb },
     .{ .class = "", .property_name = "visgroupid", .property_type = types.PropertyType.int },
@@ -227,7 +227,7 @@ const property_type_map = &[_]PropertyMapElement{
     .{ .class = "", .property_name = "logicalpos", .property_type = types.PropertyType.vector_2 },
     .{ .class = "", .property_name = "spawnflags", .property_type = types.PropertyType.int },
     .{ .class = "", .property_name = "origin", .property_type = types.PropertyType.vertex },
-    .{ .class = "connections", .property_name = "*", .property_type = types.PropertyType.entity_output }, //TODO: handle `*` as property name
+    .{ .class = "connections", .property_name = "*", .property_type = types.PropertyType.entity_output }, 
     .{ .class = "", .property_name = "activecamera", .property_type = types.PropertyType.int },
     .{ .class = "", .property_name = "position", .property_type = types.PropertyType.vertex },
     .{ .class = "", .property_name = "look", .property_type = types.PropertyType.vertex },
@@ -236,12 +236,43 @@ const property_type_map = &[_]PropertyMapElement{
     .{ .class = "", .property_name = "active", .property_type = types.PropertyType.boolean },
 };
 
-fn parse_property_value(user_allocator: std.mem.Allocator, property_string: String, property_name: String) ZvmfErrors!types.PropertyValue {
+fn glob_string_compare(haystack: []const u8, needle: []const u8) bool {
+    var glob_prefix: ?[]const u8 = null;
+    var globbing: bool = false;
+
+    var index: usize = 0;
+    while(index < haystack.len) {
+        var haystack_char: u8 = haystack[index]; 
+
+        if(haystack_char == '*') {
+            glob_prefix = haystack[0..index - 1];
+
+            globbing = true;
+            break;
+        }
+
+        index += 1;
+    }
+
+    if(globbing) {
+        return std.mem.startsWith(u8, needle, glob_prefix.?);
+    } else {
+        return std.mem.eql(u8, haystack, needle);
+    }
+}
+
+fn parse_property_value(user_allocator: std.mem.Allocator, class_name: String, property_string: String, property_name: String) ZvmfErrors!types.PropertyValue {
     var property_type: ?types.PropertyType = null;
 
     for (property_type_map) |element| {
+        //if the element only applies to a specific class, and the class name is wrong,
+        if(element.class.len != 0 and !std.mem.eql(u8, element.class, class_name.str())) {
+            //then continue
+            continue;
+        }
+
         //If they are equal, set the type
-        if (std.mem.eql(u8, element.property_name, property_name.str())) {
+        if (glob_string_compare(element.property_name, property_name.str())) {
             property_type = element.property_type;
         }
     }

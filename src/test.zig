@@ -60,16 +60,37 @@ test "triangle tag array" {
     var reference_class: types.Class = try types.Class.init(allocator);
     try reference_class.name.concat("triangle_tags");
 
-    var array: []types.TriangleTag = try allocator.alloc(types.TriangleTag, 7);
-    array[0] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
-    array[1] = types.TriangleTag.LargeZAxisSlopeWalkable;
-    array[2] = types.TriangleTag.NoSlope;
-    array[3] = types.TriangleTag.NoSlope;
-    array[4] = types.TriangleTag.LargeZAxisSlopeWalkable;
-    array[5] = types.TriangleTag.LargeZAxisSlopeWalkable;
-    array[6] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+    var array1: []types.TriangleTag = try allocator.alloc(types.TriangleTag, 7);
+    array1[0] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+    array1[1] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array1[2] = types.TriangleTag.NoSlope;
+    array1[3] = types.TriangleTag.NoSlope;
+    array1[4] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array1[5] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array1[6] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
 
-    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "row0"), .value = .{ .triangle_tag_array = .{ .array = array } } });
+    var array2: []types.TriangleTag = try allocator.alloc(types.TriangleTag, 7);
+    array2[0] = types.TriangleTag.NoSlope;
+    array2[1] = types.TriangleTag.NoSlope;
+    array2[2] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+    array2[3] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array2[4] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array2[5] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array2[6] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+
+    var array3: []types.TriangleTag = try allocator.alloc(types.TriangleTag, 8);
+    array3[0] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+    array3[1] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+    array3[2] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array3[3] = types.TriangleTag.NoSlope;
+    array3[4] = types.TriangleTag.NoSlope;
+    array3[5] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array3[6] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array3[7] = types.TriangleTag.LargeZAxisSlopeWalkable;
+
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "row0"), .value = .{ .triangle_tag_array = .{ .array = array1 } } });
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "row1"), .value = .{ .triangle_tag_array = .{ .array = array2 } } });
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "row2"), .value = .{ .triangle_tag_array = .{ .array = array3 } } });
 
     try reference_map.classes.append(reference_class);
 
@@ -77,6 +98,8 @@ test "triangle tag array" {
         \\triangle_tags
         \\{
         \\  "row0" "0 1 9 9 1 1 0"
+        \\  "row1" "9 9 0 1 1 1 0"
+        \\  "row2" "0 0 1 9 9 1 1 1"
         \\}
     );
 
