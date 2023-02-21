@@ -217,23 +217,23 @@ const property_type_map = &[_]PropertyMapElement{
     .{ .class = "distances", .property_name = "row0", .property_type = types.PropertyType.decimal_array }, //TODO: ^^^
     .{ .class = "alphas", .property_name = "row0", .property_type = types.PropertyType.decimal_array }, //TODO: ^^^
     .{ .class = "triangle_tags", .property_name = "row0", .property_type = types.PropertyType.triangle_tag_array }, //TODO: ^^^
-    .{ .class = "allowed_verts", .property_name = "10", .property_type = types.PropertyType.int_array }, 
-    .{ .class = "", .property_name = "color", .property_type = types.PropertyType.rgb }, 
-    .{ .class = "", .property_name = "visgroupid", .property_type = types.PropertyType.int }, 
-    .{ .class = "", .property_name = "groupid", .property_type = types.PropertyType.int }, 
-    .{ .class = "", .property_name = "visgroupshown", .property_type = types.PropertyType.boolean }, 
-    .{ .class = "", .property_name = "visgroupautoshown", .property_type = types.PropertyType.boolean }, 
-    .{ .class = "", .property_name = "comments", .property_type = types.PropertyType.string }, 
-    .{ .class = "", .property_name = "logicalpos", .property_type = types.PropertyType.vector_2 }, 
-    .{ .class = "", .property_name = "spawnflags", .property_type = types.PropertyType.int }, 
-    .{ .class = "", .property_name = "origin", .property_type = types.PropertyType.vertex }, 
+    .{ .class = "allowed_verts", .property_name = "10", .property_type = types.PropertyType.int_array },
+    .{ .class = "", .property_name = "color", .property_type = types.PropertyType.rgb },
+    .{ .class = "", .property_name = "visgroupid", .property_type = types.PropertyType.int },
+    .{ .class = "", .property_name = "groupid", .property_type = types.PropertyType.int },
+    .{ .class = "", .property_name = "visgroupshown", .property_type = types.PropertyType.boolean },
+    .{ .class = "", .property_name = "visgroupautoshown", .property_type = types.PropertyType.boolean },
+    .{ .class = "", .property_name = "comments", .property_type = types.PropertyType.string },
+    .{ .class = "", .property_name = "logicalpos", .property_type = types.PropertyType.vector_2 },
+    .{ .class = "", .property_name = "spawnflags", .property_type = types.PropertyType.int },
+    .{ .class = "", .property_name = "origin", .property_type = types.PropertyType.vertex },
     .{ .class = "connections", .property_name = "*", .property_type = types.PropertyType.entity_output }, //TODO: handle `*` as property name
-    .{ .class = "", .property_name = "activecamera", .property_type = types.PropertyType.int }, 
-    .{ .class = "", .property_name = "position", .property_type = types.PropertyType.vertex }, 
-    .{ .class = "", .property_name = "look", .property_type = types.PropertyType.vertex }, 
-    .{ .class = "", .property_name = "mins", .property_type = types.PropertyType.vertex }, 
-    .{ .class = "", .property_name = "maxs", .property_type = types.PropertyType.vertex }, 
-    .{ .class = "", .property_name = "active", .property_type = types.PropertyType.boolean }, 
+    .{ .class = "", .property_name = "activecamera", .property_type = types.PropertyType.int },
+    .{ .class = "", .property_name = "position", .property_type = types.PropertyType.vertex },
+    .{ .class = "", .property_name = "look", .property_type = types.PropertyType.vertex },
+    .{ .class = "", .property_name = "mins", .property_type = types.PropertyType.vertex },
+    .{ .class = "", .property_name = "maxs", .property_type = types.PropertyType.vertex },
+    .{ .class = "", .property_name = "active", .property_type = types.PropertyType.boolean },
 };
 
 fn parse_property_value(user_allocator: std.mem.Allocator, property_string: String, property_name: String) ZvmfErrors!types.PropertyValue {
@@ -270,7 +270,7 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
             @panic("todo: vertex_array");
         },
         .decimal_array => {
-            @panic("todo: decimal_array");  
+            @panic("todo: decimal_array");
         },
         .triangle_tag_array => {
             @panic("todo: triangle_tag_array");
@@ -280,6 +280,9 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
         },
         .vector_2 => {
             @panic("todo: vector_2");
+        },
+        .entity_output => {
+            @panic("todo: entity_output");
         },
         .string => {
             var user_string: String = String.init(user_allocator);

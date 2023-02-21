@@ -92,40 +92,45 @@ pub const Class = struct {
                     }
                 },
                 .plane => |plane| {
-                    if(!plane.eql(other.properties.items[i].value.plane)) {
+                    if (!plane.eql(other.properties.items[i].value.plane)) {
                         return false;
                     }
                 },
                 .uvaxis => |uvaxis| {
-                    if(!uvaxis.eql(other.properties.items[i].value.uvaxis)) {
+                    if (!uvaxis.eql(other.properties.items[i].value.uvaxis)) {
                         return false;
                     }
                 },
                 .vertex_array => |array| {
-                    if(!array.eql(other.properties.items[i].value.vertex_array)) {
+                    if (!array.eql(other.properties.items[i].value.vertex_array)) {
                         return false;
                     }
                 },
                 .decimal_array => |array| {
-                    if(!array.eql(other.properties.items[i].value.decimal_array)) {
+                    if (!array.eql(other.properties.items[i].value.decimal_array)) {
                         return false;
                     }
                 },
                 .triangle_tag_array => |array| {
-                    if(!array.eql(other.properties.items[i].value.triangle_tag_array)) {
+                    if (!array.eql(other.properties.items[i].value.triangle_tag_array)) {
                         return false;
                     }
                 },
                 .int_array => |array| {
-                    if(!array.eql(other.properties.items[i].value.int_array)) {
+                    if (!array.eql(other.properties.items[i].value.int_array)) {
                         return false;
                     }
                 },
                 .vector_2 => |vector_2| {
-                    if(!vector_2.eql(other.properties.items[i].value.vector_2)) {
+                    if (!vector_2.eql(other.properties.items[i].value.vector_2)) {
                         return false;
                     }
-                }
+                },
+                .entity_output => |entity_output| {
+                    if (!entity_output.eql(other.properties.items[i].value.entity_output)) {
+                        return false;
+                    }
+                },
             }
         }
 
@@ -213,7 +218,10 @@ pub const EntityOutput = struct {
     input: String,
     parameter_override: String,
     trigger_delay: f64,
-    times_to_fire: i64
+    times_to_fire: i64,
+    pub fn eql(self: EntityOutput, other: EntityOutput) bool {
+        return self.trigger_delay == other.trigger_delay and self.times_to_fire == other.times_to_fire and std.mem.eql(u8, self.target_entity.str(), other.target_entity.str()) and std.mem.eql(u8, self.input.str(), other.input.str()) and std.mem.eql(u8, self.parameter_override.str(), other.parameter_override.str());
+    }
 };
 
 pub const Vector2 = struct {
@@ -233,12 +241,12 @@ pub const TriangleTag = enum(u4) {
 pub const TriangleTagArray = struct {
     array: []TriangleTag,
     pub fn eql(self: TriangleTagArray, other: TriangleTagArray) bool {
-        if(self.array.len != other.array.len) {
+        if (self.array.len != other.array.len) {
             return false;
         }
 
-        for(self.array) |triangle_tag, index| {
-            if(triangle_tag != other.array[index]) {
+        for (self.array) |triangle_tag, index| {
+            if (triangle_tag != other.array[index]) {
                 return false;
             }
         }
@@ -250,12 +258,12 @@ pub const TriangleTagArray = struct {
 pub const IntArray = struct {
     array: []i64,
     pub fn eql(self: IntArray, other: IntArray) bool {
-        if(self.array.len != other.array.len) {
+        if (self.array.len != other.array.len) {
             return false;
         }
 
-        for(self.array) |int, index| {
-            if(int != other.array[index]) {
+        for (self.array) |int, index| {
+            if (int != other.array[index]) {
                 return false;
             }
         }
@@ -265,14 +273,14 @@ pub const IntArray = struct {
 };
 
 pub const VertexArray = struct {
-    array: []Vertex, 
+    array: []Vertex,
     pub fn eql(self: VertexArray, other: VertexArray) bool {
-        if(self.array.len != other.array.len) {
+        if (self.array.len != other.array.len) {
             return false;
         }
 
-        for(self.array) |vertex, index| {
-            if(!vertex.eql(other.array[index])) {
+        for (self.array) |vertex, index| {
+            if (!vertex.eql(other.array[index])) {
                 return false;
             }
         }
@@ -282,14 +290,14 @@ pub const VertexArray = struct {
 };
 
 pub const DecimalArray = struct {
-    array: []f64, 
+    array: []f64,
     pub fn eql(self: DecimalArray, other: DecimalArray) bool {
-        if(self.array.len != other.array.len) {
+        if (self.array.len != other.array.len) {
             return false;
         }
 
-        for(self.array) |decimal, index| {
-            if(decimal != other.array[index]) {
+        for (self.array) |decimal, index| {
+            if (decimal != other.array[index]) {
                 return false;
             }
         }
