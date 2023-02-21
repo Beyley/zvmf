@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "zig.buildLastTarget",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"label": "Zig build last target: Build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}
