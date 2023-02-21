@@ -6,7 +6,7 @@ const types = @import("types.zig");
 const Map = types.Map;
 const ParseError = types.ParseError;
 
-const ZvmfErrors = (ParseError || String.Error || std.fmt.ParseIntError);
+const ZvmfErrors = (ParseError || String.Error || std.fmt.ParseIntError || std.fmt.ParseFloatError);
 
 const ParserState = struct {
     char_index: usize,
@@ -258,7 +258,9 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
             return .{ .int = int };
         },
         .decimal => {
-            @panic("todo: decimal");
+            var dec: f64 = try std.fmt.parseFloat(f64, property_string.str());
+
+            return .{ .decimal = dec };
         },
         .uvaxis => {
             @panic("todo: uvaxis");
@@ -297,7 +299,67 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
             return .{ .boolean = boolean };
         },
         .vertex => {
-            @panic("todo: vertex");
+            var value: types.PropertyValue = .{ .vertex = .{.x = 0, .y = 0, .z =0} };
+
+            var iterator = property_string.iterator();
+
+            var next: ?[]const u8 = iterator.next();
+
+            if(next == null) {
+                return types.ParseError.UnexpectedEndOfFile;
+            }
+
+            var num_start_index: ?usize = null;
+            var element: u8 = 0;
+            var hit_first: bool = false;
+            while(next != null) {
+                var character: []const u8 = next.?;
+
+                //if we have not hit the first number yet, and we are not at a digit, 
+                if(!hit_first and !ascii.isDigit(character[0])) {
+                    //then skip, as we are at a ( or a [
+                    next = iterator.next();
+                    continue;
+                }
+
+                var index = iterator.index;
+                next = iterator.next();
+
+                //we have hit a number
+                hit_first = true;
+                //if we have not started a number yet, then mark that we have
+                if(num_start_index == null) {
+                    num_start_index = index - 1;
+                }
+
+                var wrap_end = character[0] == ']' or character[0] == ')';
+
+                //if we are at a whitespace, then end the current number, and write it to the value
+                if(next == null or ascii.isWhitespace(character[0]) or wrap_end) {
+                    var offset: usize = if(next == null and !wrap_end) 0 else 1;
+
+                    var number_slice = property_string.buffer.?[num_start_index.?..index - offset];
+
+                    var parsed = try std.fmt.parseFloat(f64, number_slice);
+
+                    if(element == 0) {
+                        value.vertex.x = parsed;
+                    } else if (element == 1) {
+                        value.vertex.y = parsed;
+                    } else if (element == 2) {
+                        value.vertex.z = parsed;
+                    }
+
+                    element += 1;
+                    if(element > 2) {
+                        break;
+                    }
+
+                    num_start_index = null;
+                }
+            }
+
+            return value;
         },
         .rgb => {
             var value: types.PropertyValue = .{ .rgb = .{ .r = 0, .g = 0, .b = 0 } };

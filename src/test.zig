@@ -19,6 +19,35 @@ test "blank file" {
     try testing.expect(false);
 }
 
+test "vertex" {
+    //Create the arena allocator where we will allocate all of our working data
+    var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_allocator.deinit();
+
+    const allocator = arena_allocator.allocator();
+
+    var reference_map: types.Map = try types.Map.init(allocator);
+    
+    var reference_class: types.Class = try types.Class.init(allocator);
+    try reference_class.name.concat("test_class");
+    try reference_class.properties.append(types.Property {.name = try String.init_with_contents(allocator, "startposition"), .value = .{.vertex = .{.x = 123, .y = 456, .z = 789}}});
+    try reference_class.properties.append(types.Property {.name = try String.init_with_contents(allocator, "origin"), .value = .{.vertex = .{.x = 987, .y = 654, .z = 321}}});
+    try reference_class.properties.append(types.Property {.name = try String.init_with_contents(allocator, "mins"), .value = .{.vertex = .{.x = 10.5, .y = 55.3, .z = 88.2}}});
+
+    try reference_map.classes.append(reference_class);
+
+    var map: types.Map = try lib.parse_vmf(allocator,
+    \\test_class
+    \\{
+    \\  "startposition" "[123 456 789]"
+    \\  "origin" "987 654 321"
+    \\  "mins" "(10.5 55.3 88.2)"
+    \\}
+    );
+
+    try testing.expect(map.eql(reference_map));
+}
+
 test "non-nested class versioninfo" {
     //Create the arena allocator where we will allocate all of our working data
     var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
