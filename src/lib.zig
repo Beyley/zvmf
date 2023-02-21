@@ -240,6 +240,11 @@ fn glob_string_compare(haystack: []const u8, needle: []const u8) bool {
     var glob_prefix: ?[]const u8 = null;
     var globbing: bool = false;
 
+    //if it starts with a glob, just return true, as everything matches
+    if(haystack[0] == '*') {
+        return true;
+    }
+
     var index: usize = 0;
     while(index < haystack.len) {
         var haystack_char: u8 = haystack[index]; 
