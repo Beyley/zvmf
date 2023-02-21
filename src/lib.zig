@@ -275,7 +275,35 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
             @panic("todo: decimal_array");
         },
         .triangle_tag_array => {
-            @panic("todo: triangle_tag_array");
+            var array_length: usize = (property_string.len() - 1) / 2 + 1;
+
+            var array: []types.TriangleTag = try user_allocator.alloc(types.TriangleTag, array_length);
+
+            var iterator = property_string.iterator();
+
+            var next: ?[]const u8 = iterator.next();
+
+            var i: usize = 0;
+            while(i < array_length) {
+                var character: []const u8 = next.?;
+
+                if(character[0] == '0') {
+                    array[i] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+                } else if (character[0] == '1') {
+                    array[i] = types.TriangleTag.LargeZAxisSlopeWalkable;
+                } else if (character[0] == '9') {
+                    array[i] = types.TriangleTag.NoSlope;
+                } else {
+                    return types.ParseError.UnexpectedToken;
+                }
+
+                _ = iterator.next();
+                next = iterator.next();
+            
+                i += 1;
+            }
+
+            return .{ .triangle_tag_array = .{ .array = array } };
         },
         .int_array => {
             @panic("todo: int_array");
@@ -287,9 +315,8 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
             @panic("todo: entity_output");
         },
         .string => {
-            var user_string: String = String.init(user_allocator);
-
-            try user_string.concat(property_string.str());
+            //make a new string with the user allocator with the contents of the property string
+            var user_string: String = try String.init_with_contents(user_allocator, property_string.str());
 
             return .{ .string = user_string };
         },
@@ -299,24 +326,24 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
             return .{ .boolean = boolean };
         },
         .vertex => {
-            var value: types.PropertyValue = .{ .vertex = .{.x = 0, .y = 0, .z =0} };
+            var value: types.PropertyValue = .{ .vertex = .{ .x = 0, .y = 0, .z = 0 } };
 
             var iterator = property_string.iterator();
 
             var next: ?[]const u8 = iterator.next();
 
-            if(next == null) {
+            if (next == null) {
                 return types.ParseError.UnexpectedEndOfFile;
             }
 
             var num_start_index: ?usize = null;
             var element: u8 = 0;
             var hit_first: bool = false;
-            while(next != null) {
+            while (next != null) {
                 var character: []const u8 = next.?;
 
-                //if we have not hit the first number yet, and we are not at a digit, 
-                if(!hit_first and !ascii.isDigit(character[0])) {
+                //if we have not hit the first number yet, and we are not at a digit,
+                if (!hit_first and !ascii.isDigit(character[0])) {
                     //then skip, as we are at a ( or a [
                     next = iterator.next();
                     continue;
@@ -328,21 +355,21 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
                 //we have hit a number
                 hit_first = true;
                 //if we have not started a number yet, then mark that we have
-                if(num_start_index == null) {
+                if (num_start_index == null) {
                     num_start_index = index - 1;
                 }
 
                 var wrap_end = character[0] == ']' or character[0] == ')';
 
                 //if we are at a whitespace, then end the current number, and write it to the value
-                if(next == null or ascii.isWhitespace(character[0]) or wrap_end) {
-                    var offset: usize = if(next == null and !wrap_end) 0 else 1;
+                if (next == null or ascii.isWhitespace(character[0]) or wrap_end) {
+                    var offset: usize = if (next == null and !wrap_end) 0 else 1;
 
-                    var number_slice = property_string.buffer.?[num_start_index.?..index - offset];
+                    var number_slice = property_string.buffer.?[num_start_index.? .. index - offset];
 
                     var parsed = try std.fmt.parseFloat(f64, number_slice);
 
-                    if(element == 0) {
+                    if (element == 0) {
                         value.vertex.x = parsed;
                     } else if (element == 1) {
                         value.vertex.y = parsed;
@@ -351,7 +378,7 @@ fn parse_property_value(user_allocator: std.mem.Allocator, property_string: Stri
                     }
 
                     element += 1;
-                    if(element > 2) {
+                    if (element > 2) {
                         break;
                     }
 

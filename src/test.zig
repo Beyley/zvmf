@@ -27,22 +27,57 @@ test "vertex" {
     const allocator = arena_allocator.allocator();
 
     var reference_map: types.Map = try types.Map.init(allocator);
-    
+
     var reference_class: types.Class = try types.Class.init(allocator);
     try reference_class.name.concat("test_class");
-    try reference_class.properties.append(types.Property {.name = try String.init_with_contents(allocator, "startposition"), .value = .{.vertex = .{.x = 123, .y = 456, .z = 789}}});
-    try reference_class.properties.append(types.Property {.name = try String.init_with_contents(allocator, "origin"), .value = .{.vertex = .{.x = 987, .y = 654, .z = 321}}});
-    try reference_class.properties.append(types.Property {.name = try String.init_with_contents(allocator, "mins"), .value = .{.vertex = .{.x = 10.5, .y = 55.3, .z = 88.2}}});
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "startposition"), .value = .{ .vertex = .{ .x = 123, .y = 456, .z = 789 } } });
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "origin"), .value = .{ .vertex = .{ .x = 987, .y = 654, .z = 321 } } });
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "mins"), .value = .{ .vertex = .{ .x = 10.5, .y = 55.3, .z = 88.2 } } });
 
     try reference_map.classes.append(reference_class);
 
     var map: types.Map = try lib.parse_vmf(allocator,
-    \\test_class
-    \\{
-    \\  "startposition" "[123 456 789]"
-    \\  "origin" "987 654 321"
-    \\  "mins" "(10.5 55.3 88.2)"
-    \\}
+        \\test_class
+        \\{
+        \\  "startposition" "[123 456 789]"
+        \\  "origin" "987 654 321"
+        \\  "mins" "(10.5 55.3 88.2)"
+        \\}
+    );
+
+    try testing.expect(map.eql(reference_map));
+}
+
+test "triangle tag array" {
+    //Create the arena allocator where we will allocate all of our working data
+    var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_allocator.deinit();
+
+    const allocator = arena_allocator.allocator();
+
+    var reference_map: types.Map = try types.Map.init(allocator);
+
+    var reference_class: types.Class = try types.Class.init(allocator);
+    try reference_class.name.concat("triangle_tags");
+
+    var array: []types.TriangleTag = try allocator.alloc(types.TriangleTag, 7);
+    array[0] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+    array[1] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array[2] = types.TriangleTag.NoSlope;
+    array[3] = types.TriangleTag.NoSlope;
+    array[4] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array[5] = types.TriangleTag.LargeZAxisSlopeWalkable;
+    array[6] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
+
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "row0"), .value = .{ .triangle_tag_array = .{ .array = array } } });
+
+    try reference_map.classes.append(reference_class);
+
+    var map: types.Map = try lib.parse_vmf(allocator,
+        \\triangle_tags
+        \\{
+        \\  "row0" "0 1 9 9 1 1 0"
+        \\}
     );
 
     try testing.expect(map.eql(reference_map));
