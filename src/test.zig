@@ -9,7 +9,7 @@ var test_allocator: std.mem.Allocator = std.testing.allocator;
 
 test "blank file" {
     //try to parse a blank file
-    _ = lib.parse_vmf(test_allocator, "") catch |err| {
+    _ = lib.parseVmf(test_allocator, "") catch |err| {
         //Check that the error is a blank file error
         try testing.expect(err == types.ParseError.EmptyFile);
         return;
@@ -36,7 +36,7 @@ test "vertex" {
 
     try reference_map.classes.append(reference_class);
 
-    var map: types.Map = try lib.parse_vmf(allocator,
+    var map: types.Map = try lib.parseVmf(allocator,
         \\test_class
         \\{
         \\  "startposition" "[123 456 789]"
@@ -94,7 +94,7 @@ test "triangle tag array" {
 
     try reference_map.classes.append(reference_class);
 
-    var map: types.Map = try lib.parse_vmf(allocator,
+    var map: types.Map = try lib.parseVmf(allocator,
         \\triangle_tags
         \\{
         \\  "row0" "0 1 9 9 1 1 0"
@@ -124,7 +124,7 @@ test "non-nested class versioninfo" {
     try reference_class.properties.append(.{ .name = try String.init_with_contents(allocator, "prefab"), .value = .{ .boolean = false } });
     try reference_map.classes.append(reference_class);
 
-    var map: types.Map = try lib.parse_vmf(allocator,
+    var map: types.Map = try lib.parseVmf(allocator,
         \\versioninfo
         \\{
         \\  "editorversion" "400"
@@ -156,7 +156,7 @@ test "non-nested class viewsettings" {
     try reference_class.properties.append(.{ .name = try String.init_with_contents(allocator, "bShow3DGrid"), .value = .{ .boolean = false } });
     try reference_map.classes.append(reference_class);
 
-    var map: types.Map = try lib.parse_vmf(allocator,
+    var map: types.Map = try lib.parseVmf(allocator,
         \\viewsettings
         \\{
         \\  "bSnapToGrid" "1"
@@ -197,7 +197,7 @@ test "multiple non-nested classes" {
     try reference_class.properties.append(.{ .name = try String.init_with_contents(allocator, "prefab"), .value = .{ .boolean = false } });
     try reference_map.classes.append(reference_class);
 
-    var map: types.Map = try lib.parse_vmf(allocator,
+    var map: types.Map = try lib.parseVmf(allocator,
         \\viewsettings
         \\{
         \\  "bSnapToGrid" "1"
@@ -260,7 +260,7 @@ test "nested class visgroups" {
     try reference_subclass_2.sub_classes.append(reference_subclass_2_1);
     try reference_subclass_2.sub_classes.append(reference_subclass_2_2);
 
-    var map: types.Map = try lib.parse_vmf(allocator,
+    var map: types.Map = try lib.parseVmf(allocator,
         \\visgroups
         \\{
         \\  visgroup

@@ -20,7 +20,7 @@ const class_name_enders: *const [2]u8 = &[_]u8{
     '}',
 };
 
-fn skip_whitespace(iterator: *String.StringIterator) void {
+fn skipWhitespace(iterator: *String.StringIterator) void {
     var next: ?[]const u8 = iterator.next();
 
     //if theres no character next, then return out
@@ -43,7 +43,7 @@ fn skip_whitespace(iterator: *String.StringIterator) void {
     }
 }
 
-fn read_class(allocator: std.mem.Allocator, user_allocator: std.mem.Allocator, map_string: String, map: Map, state: ParserState, iterator: *String.StringIterator) ZvmfErrors!types.Class {
+fn readClass(allocator: std.mem.Allocator, user_allocator: std.mem.Allocator, map_string: String, map: Map, state: ParserState, iterator: *String.StringIterator) ZvmfErrors!types.Class {
     var class: types.Class = try types.Class.init(user_allocator);
 
     var class_name: String = String.init(allocator);
@@ -87,7 +87,7 @@ fn read_class(allocator: std.mem.Allocator, user_allocator: std.mem.Allocator, m
     try class.name.concat(class_name.str());
 
     //Skip any extra whitespace
-    skip_whitespace(iterator);
+    skipWhitespace(iterator);
 
     next = iterator.next();
 
@@ -97,7 +97,7 @@ fn read_class(allocator: std.mem.Allocator, user_allocator: std.mem.Allocator, m
     }
 
     //Skip any extra whitespace
-    skip_whitespace(iterator);
+    skipWhitespace(iterator);
 
     var read_property_name: bool = false;
     var is_reading_string: bool = false;
@@ -145,7 +145,7 @@ fn read_class(allocator: std.mem.Allocator, user_allocator: std.mem.Allocator, m
                 }
                 //if we have read a property name, then fill in the property value
                 else {
-                    var property_value = try parse_property_value(user_allocator, class_name, working_string.?, working_property.?.name);
+                    var property_value = try parsePropertyValue(user_allocator, class_name, working_string.?, working_property.?.name);
 
                     working_property.?.value = property_value;
 
@@ -161,7 +161,7 @@ fn read_class(allocator: std.mem.Allocator, user_allocator: std.mem.Allocator, m
             //move the index back by 1, so the read_class can read the full name
             iterator.index -= 1;
 
-            var nested_class = try read_class(allocator, user_allocator, map_string, map, state, iterator);
+            var nested_class = try readClass(allocator, user_allocator, map_string, map, state, iterator);
 
             try class.sub_classes.append(nested_class);
         }
@@ -236,7 +236,7 @@ const property_type_map = &[_]PropertyMapElement{
     .{ .class = "", .property_name = "active", .property_type = types.PropertyType.boolean },
 };
 
-fn glob_string_compare(haystack: []const u8, needle: []const u8) bool {
+fn globStringCompare(haystack: []const u8, needle: []const u8) bool {
     var glob_prefix: ?[]const u8 = null;
     var globbing: bool = false;
 
@@ -266,7 +266,7 @@ fn glob_string_compare(haystack: []const u8, needle: []const u8) bool {
     }
 }
 
-fn parse_property_value(user_allocator: std.mem.Allocator, class_name: String, property_string: String, property_name: String) ZvmfErrors!types.PropertyValue {
+fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, property_string: String, property_name: String) ZvmfErrors!types.PropertyValue {
     var property_type: ?types.PropertyType = null;
 
     for (property_type_map) |element| {
@@ -277,7 +277,7 @@ fn parse_property_value(user_allocator: std.mem.Allocator, class_name: String, p
         }
 
         //If they are equal, set the type
-        if (glob_string_compare(element.property_name, property_name.str())) {
+        if (globStringCompare(element.property_name, property_name.str())) {
             property_type = element.property_type;
         }
     }
@@ -487,7 +487,7 @@ fn parse_property_value(user_allocator: std.mem.Allocator, class_name: String, p
     @panic("invalid property type?");
 }
 
-pub fn parse_vmf(user_allocator: std.mem.Allocator, data: []const u8) ZvmfErrors!Map {
+pub fn parseVmf(user_allocator: std.mem.Allocator, data: []const u8) ZvmfErrors!Map {
     //If its empty, return an error
     if (data.len == 0) {
         return ParseError.EmptyFile;
@@ -531,7 +531,7 @@ pub fn parse_vmf(user_allocator: std.mem.Allocator, data: []const u8) ZvmfErrors
         if (!state.reading_string and character[0] != '"') {
             //Go back one charactor, so read_class starts at the first character of the class name
             iterator.index -= 1;
-            var class = try read_class(allocator, user_allocator, map_string, map, state, &iterator);
+            var class = try readClass(allocator, user_allocator, map_string, map, state, &iterator);
             //If reading the class succeeded, then add it to the map, otherwise return the error
             try map.classes.append(class);
         }
