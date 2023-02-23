@@ -326,9 +326,9 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
                 }
 
                 if(num_start_index != null and (next == null or ascii.isWhitespace(character[0]) or character[0] == ']')) {
-                    var offset: usize = if(next == null) 0 else 2;
+                    var offset: usize = if(next == null) 0 else 1;
 
-                    var slice: []const u8 = property_string.buffer.?[num_start_index.? .. iterator.index - offset];
+                    var slice: []const u8 = property_string.buffer.?[num_start_index.? .. index - offset];
 
                     var num = try std.fmt.parseFloat(f64, slice);
 
