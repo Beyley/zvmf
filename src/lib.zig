@@ -211,12 +211,12 @@ const property_type_map = &[_]PropertyMapElement{
     .{ .class = "", .property_name = "startposition", .property_type = types.PropertyType.vertex },
     .{ .class = "", .property_name = "elevation", .property_type = types.PropertyType.decimal },
     .{ .class = "", .property_name = "subdiv", .property_type = types.PropertyType.boolean },
-    .{ .class = "normals", .property_name = "row*", .property_type = types.PropertyType.vertex_array }, 
-    .{ .class = "offsets", .property_name = "row*", .property_type = types.PropertyType.vertex_array }, 
-    .{ .class = "offset_normals", .property_name = "row*", .property_type = types.PropertyType.vertex_array }, 
-    .{ .class = "distances", .property_name = "row*", .property_type = types.PropertyType.decimal_array }, 
-    .{ .class = "alphas", .property_name = "row*", .property_type = types.PropertyType.decimal_array }, 
-    .{ .class = "triangle_tags", .property_name = "row*", .property_type = types.PropertyType.triangle_tag_array }, 
+    .{ .class = "normals", .property_name = "row*", .property_type = types.PropertyType.vertex_array },
+    .{ .class = "offsets", .property_name = "row*", .property_type = types.PropertyType.vertex_array },
+    .{ .class = "offset_normals", .property_name = "row*", .property_type = types.PropertyType.vertex_array },
+    .{ .class = "distances", .property_name = "row*", .property_type = types.PropertyType.decimal_array },
+    .{ .class = "alphas", .property_name = "row*", .property_type = types.PropertyType.decimal_array },
+    .{ .class = "triangle_tags", .property_name = "row*", .property_type = types.PropertyType.triangle_tag_array },
     .{ .class = "allowed_verts", .property_name = "10", .property_type = types.PropertyType.int_array },
     .{ .class = "", .property_name = "color", .property_type = types.PropertyType.rgb },
     .{ .class = "", .property_name = "visgroupid", .property_type = types.PropertyType.int },
@@ -227,7 +227,7 @@ const property_type_map = &[_]PropertyMapElement{
     .{ .class = "", .property_name = "logicalpos", .property_type = types.PropertyType.vector_2 },
     .{ .class = "", .property_name = "spawnflags", .property_type = types.PropertyType.int },
     .{ .class = "", .property_name = "origin", .property_type = types.PropertyType.vertex },
-    .{ .class = "connections", .property_name = "*", .property_type = types.PropertyType.entity_output }, 
+    .{ .class = "connections", .property_name = "*", .property_type = types.PropertyType.entity_output },
     .{ .class = "", .property_name = "activecamera", .property_type = types.PropertyType.int },
     .{ .class = "", .property_name = "position", .property_type = types.PropertyType.vertex },
     .{ .class = "", .property_name = "look", .property_type = types.PropertyType.vertex },
@@ -241,16 +241,16 @@ fn globStringCompare(haystack: []const u8, needle: []const u8) bool {
     var globbing: bool = false;
 
     //if it starts with a glob, just return true, as everything matches
-    if(haystack[0] == '*') {
+    if (haystack[0] == '*') {
         return true;
     }
 
     var index: usize = 0;
-    while(index < haystack.len) {
-        var haystack_char: u8 = haystack[index]; 
+    while (index < haystack.len) {
+        var haystack_char: u8 = haystack[index];
 
-        if(haystack_char == '*') {
-            glob_prefix = haystack[0..index - 1];
+        if (haystack_char == '*') {
+            glob_prefix = haystack[0 .. index - 1];
 
             globbing = true;
             break;
@@ -259,7 +259,7 @@ fn globStringCompare(haystack: []const u8, needle: []const u8) bool {
         index += 1;
     }
 
-    if(globbing) {
+    if (globbing) {
         return std.mem.startsWith(u8, needle, glob_prefix.?);
     } else {
         return std.mem.eql(u8, haystack, needle);
@@ -271,7 +271,7 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
 
     for (property_type_map) |element| {
         //if the element only applies to a specific class, and the class name is wrong,
-        if(element.class.len != 0 and !std.mem.eql(u8, element.class, class_name.str())) {
+        if (element.class.len != 0 and !std.mem.eql(u8, element.class, class_name.str())) {
             //then continue
             continue;
         }
@@ -302,18 +302,18 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
             var axis: types.UVAxis = .{ .x = 0, .y = 0, .z = 0, .translation = 0, .total_scaling = 0 };
 
             var iterator = property_string.iterator();
-            
+
             var next: ?[]const u8 = iterator.next();
-            
+
             var channel: u8 = 0;
 
             var num_start_index: ?usize = null;
 
-            while(next != null) {
+            while (next != null) {
                 var character: []const u8 = next.?;
-                
-                //skip [ 
-                if(character[0] == '[') {
+
+                //skip [
+                if (character[0] == '[') {
                     next = iterator.next();
                     continue;
                 }
@@ -321,18 +321,18 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
                 var index = iterator.index;
                 next = iterator.next();
 
-                if((ascii.isDigit(character[0]) or character[0] == '.') and num_start_index == null) {
+                if ((ascii.isDigit(character[0]) or character[0] == '.') and num_start_index == null) {
                     num_start_index = index - 1;
                 }
 
-                if(num_start_index != null and (next == null or ascii.isWhitespace(character[0]) or character[0] == ']')) {
-                    var offset: usize = if(next == null) 0 else 1;
+                if (num_start_index != null and (next == null or ascii.isWhitespace(character[0]) or character[0] == ']')) {
+                    var offset: usize = if (next == null) 0 else 1;
 
                     var slice: []const u8 = property_string.buffer.?[num_start_index.? .. index - offset];
 
                     var num = try std.fmt.parseFloat(f64, slice);
 
-                    if(channel == 0) {
+                    if (channel == 0) {
                         axis.x = num;
                     } else if (channel == 1) {
                         axis.y = num;
@@ -345,18 +345,68 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
                     }
 
                     channel += 1;
-                    if(channel > 4) {
+                    if (channel > 4) {
                         break;
                     }
 
                     num_start_index = null;
                 }
             }
-            
+
             return .{ .uvaxis = axis };
         },
         .plane => {
-            @panic("todo: plane");
+            const VertexPos = struct { start: usize, end: usize };
+
+            var plane: types.Plane = .{ .vtx1 = .{ .x = 0, .y = 0, .z = 0 }, .vtx2 = .{ .x = 0, .y = 0, .z = 0 }, .vtx3 = .{ .x = 0, .y = 0, .z = 0 } };
+
+            var iterator = property_string.iterator();
+
+            var pos: VertexPos = .{ .start = 0, .end = 0 };
+
+            var element: u8 = 0;
+
+            var next: ?[]const u8 = iterator.next();
+            while (next != null) {
+                var character: []const u8 = next.?;
+
+                if (ascii.isWhitespace(character[0])) {
+                    next = iterator.next();
+                    continue;
+                }
+
+                if (character[0] == '(') {
+                    pos.start = iterator.index - 1;
+                }
+
+                if (character[0] == ')') {
+                    pos.end = iterator.index - 1;
+
+                    var sub: String = try property_string.substr(pos.start, pos.end);
+                    defer sub.deinit();
+
+                    var vertex: types.Vertex = try parseVertex(sub);
+
+                    if (element == 0) {
+                        plane.vtx1 = vertex;
+                    } else if (element == 1) {
+                        plane.vtx2 = vertex;
+                    } else if (element == 2) {
+                        plane.vtx3 = vertex;
+                    }
+
+                    element += 1;
+
+                    if (element > 2) {
+                        //we have found all 3 elements
+                        break;
+                    }
+                }
+
+                next = iterator.next();
+            }
+
+            return .{ .plane = plane };
         },
         .vertex_array => {
             @panic("todo: vertex_array");
@@ -374,10 +424,10 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
             var next: ?[]const u8 = iterator.next();
 
             var i: usize = 0;
-            while(i < array_length) {
+            while (i < array_length) {
                 var character: []const u8 = next.?;
 
-                if(character[0] == '0') {
+                if (character[0] == '0') {
                     array[i] = types.TriangleTag.LargeZAxisSlopeNonWalkable;
                 } else if (character[0] == '1') {
                     array[i] = types.TriangleTag.LargeZAxisSlopeWalkable;
@@ -389,7 +439,7 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
 
                 _ = iterator.next();
                 next = iterator.next();
-            
+
                 i += 1;
             }
 
@@ -416,67 +466,7 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
             return .{ .boolean = boolean };
         },
         .vertex => {
-            var value: types.PropertyValue = .{ .vertex = .{ .x = 0, .y = 0, .z = 0 } };
-
-            var iterator = property_string.iterator();
-
-            var next: ?[]const u8 = iterator.next();
-
-            if (next == null) {
-                return types.ParseError.UnexpectedEndOfFile;
-            }
-
-            var num_start_index: ?usize = null;
-            var element: u8 = 0;
-            var hit_first: bool = false;
-            while (next != null) {
-                var character: []const u8 = next.?;
-
-                //if we have not hit the first number yet, and we are not at a digit,
-                if (!hit_first and !ascii.isDigit(character[0])) {
-                    //then skip, as we are at a ( or a [
-                    next = iterator.next();
-                    continue;
-                }
-
-                var index = iterator.index;
-                next = iterator.next();
-
-                //we have hit a number
-                hit_first = true;
-                //if we have not started a number yet, then mark that we have
-                if (num_start_index == null) {
-                    num_start_index = index - 1;
-                }
-
-                var wrap_end = character[0] == ']' or character[0] == ')';
-
-                //if we are at a whitespace, then end the current number, and write it to the value
-                if (next == null or ascii.isWhitespace(character[0]) or wrap_end) {
-                    var offset: usize = if (next == null and !wrap_end) 0 else 1;
-
-                    var number_slice = property_string.buffer.?[num_start_index.? .. index - offset];
-
-                    var parsed = try std.fmt.parseFloat(f64, number_slice);
-
-                    if (element == 0) {
-                        value.vertex.x = parsed;
-                    } else if (element == 1) {
-                        value.vertex.y = parsed;
-                    } else if (element == 2) {
-                        value.vertex.z = parsed;
-                    }
-
-                    element += 1;
-                    if (element > 2) {
-                        break;
-                    }
-
-                    num_start_index = null;
-                }
-            }
-
-            return value;
+            return .{ .vertex = try parseVertex(property_string) };
         },
         .rgb => {
             var value: types.PropertyValue = .{ .rgb = .{ .r = 0, .g = 0, .b = 0 } };
@@ -539,6 +529,70 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
     }
 
     @panic("invalid property type?");
+}
+
+fn parseVertex(string: String) ZvmfErrors!types.Vertex {
+    var value: types.Vertex = .{ .x = 0, .y = 0, .z = 0 };
+
+    var iterator = string.iterator();
+
+    var next: ?[]const u8 = iterator.next();
+
+    if (next == null) {
+        return types.ParseError.UnexpectedEndOfFile;
+    }
+
+    var num_start_index: ?usize = null;
+    var element: u8 = 0;
+    var hit_first: bool = false;
+    while (next != null) {
+        var character: []const u8 = next.?;
+
+        //if we have not hit the first number yet, and we are not at a digit,
+        if (!hit_first and !ascii.isDigit(character[0])) {
+            //then skip, as we are at a ( or a [
+            next = iterator.next();
+            continue;
+        }
+
+        var index = iterator.index;
+        next = iterator.next();
+
+        //we have hit a number
+        hit_first = true;
+        //if we have not started a number yet, then mark that we have
+        if (num_start_index == null) {
+            num_start_index = index - 1;
+        }
+
+        var wrap_end = character[0] == ']' or character[0] == ')';
+
+        //if we are at a whitespace, then end the current number, and write it to the value
+        if (next == null or ascii.isWhitespace(character[0]) or wrap_end) {
+            var offset: usize = if (next == null and !wrap_end) 0 else 1;
+
+            var number_slice = string.buffer.?[num_start_index.? .. index - offset];
+
+            var parsed = try std.fmt.parseFloat(f64, number_slice);
+
+            if (element == 0) {
+                value.x = parsed;
+            } else if (element == 1) {
+                value.y = parsed;
+            } else if (element == 2) {
+                value.z = parsed;
+            }
+
+            element += 1;
+            if (element > 2) {
+                break;
+            }
+
+            num_start_index = null;
+        }
+    }
+
+    return value;
 }
 
 pub fn parseVmf(user_allocator: std.mem.Allocator, data: []const u8) ZvmfErrors!Map {
