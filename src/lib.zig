@@ -382,6 +382,7 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
                 if (character[0] == ')') {
                     pos.end = iterator.index - 1;
 
+                    //TODO: dont allocate here
                     var sub: String = try property_string.substr(pos.start, pos.end);
                     defer sub.deinit();
 
