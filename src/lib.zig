@@ -299,7 +299,61 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
             return .{ .decimal = dec };
         },
         .uvaxis => {
-            @panic("todo: uvaxis");
+            var axis: types.UVAxis = .{ .x = 0, .y = 0, .z = 0, .translation = 0, .total_scaling = 0 };
+
+            var iterator = property_string.iterator();
+            
+            var next: ?[]const u8 = iterator.next();
+            
+            var channel: u8 = 0;
+
+            var num_start_index: ?usize = null;
+
+            while(next != null) {
+                var character: []const u8 = next.?;
+                
+                //skip [ 
+                if(character[0] == '[') {
+                    next = iterator.next();
+                    continue;
+                }
+
+                var index = iterator.index;
+                next = iterator.next();
+
+                if((ascii.isDigit(character[0]) or character[0] == '.') and num_start_index == null) {
+                    num_start_index = index - 1;
+                }
+
+                if(num_start_index != null and (next == null or ascii.isWhitespace(character[0]) or character[0] == ']')) {
+                    var offset: usize = if(next == null) 0 else 2;
+
+                    var slice: []const u8 = property_string.buffer.?[num_start_index.? .. iterator.index - offset];
+
+                    var num = try std.fmt.parseFloat(f64, slice);
+
+                    if(channel == 0) {
+                        axis.x = num;
+                    } else if (channel == 1) {
+                        axis.y = num;
+                    } else if (channel == 2) {
+                        axis.z = num;
+                    } else if (channel == 3) {
+                        axis.translation = num;
+                    } else if (channel == 4) {
+                        axis.total_scaling = num;
+                    }
+
+                    channel += 1;
+                    if(channel > 4) {
+                        break;
+                    }
+
+                    num_start_index = null;
+                }
+            }
+            
+            return .{ .uvaxis = axis };
         },
         .plane => {
             @panic("todo: plane");

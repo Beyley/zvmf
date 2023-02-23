@@ -48,6 +48,33 @@ test "vertex" {
     try testing.expect(map.eql(reference_map));
 }
 
+test "uvaxis" {
+    //Create the arena allocator where we will allocate all of our working data
+    var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_allocator.deinit();
+
+    const allocator = arena_allocator.allocator();
+
+    var reference_map: types.Map = try types.Map.init(allocator);
+
+    var reference_class: types.Class = try types.Class.init(allocator);
+    try reference_class.name.concat("test_class");
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "uaxis"), .value = .{ .uvaxis = .{ .x = 1, .y = 2, .z = 3, .translation = 4, .total_scaling = 7.3267} } });
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "vaxis"), .value = .{ .uvaxis = .{ .x = 4, .y = 3, .z = 2, .translation = 1, .total_scaling = 9.25 } } });
+
+    try reference_map.classes.append(reference_class);
+
+    var map: types.Map = try lib.parseVmf(allocator,
+        \\test_class
+        \\{
+        \\  "uaxis" "[1 2 3 4] 7.3267"
+        \\  "vaxis" "[4 3 2 1] 9.25"
+        \\}
+    );
+
+    try testing.expect(map.eql(reference_map));
+}
+
 test "triangle tag array" {
     //Create the arena allocator where we will allocate all of our working data
     var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
