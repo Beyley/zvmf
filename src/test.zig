@@ -75,6 +75,48 @@ test "uvaxis" {
     try testing.expect(map.eql(reference_map));
 }
 
+test "decimal array" {
+    //Create the arena allocator where we will allocate all of our working data
+    var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_allocator.deinit();
+
+    const allocator = arena_allocator.allocator();
+
+    var reference_map: types.Map = try types.Map.init(allocator);
+
+    var reference_class: types.Class = try types.Class.init(allocator);
+    try reference_class.name.concat("distances");
+
+    var arr1: []f64 = try allocator.alloc(f64, 4);
+    arr1[0] = 0.5;
+    arr1[1] = 1.2;
+    arr1[2] = 2.6;
+    arr1[3] = 3.9;
+
+    var arr2: []f64 = try allocator.alloc(f64, 6);
+    arr2[0] = 1;
+    arr2[1] = 2;
+    arr2[2] = 3;
+    arr2[3] = 4.2;
+    arr2[4] = 5;
+    arr2[5] = 6;
+
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "row0"), .value = .{ .decimal_array = .{ .array = arr1 } } });
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "row1"), .value = .{ .decimal_array = .{ .array = arr2 } } });
+
+    try reference_map.classes.append(reference_class);
+
+    var map: types.Map = try lib.parseVmf(allocator,
+        \\distances
+        \\{
+        \\  "row0" "0.5 1.2 2.6 3.9"
+        \\  "row1" "1 2 3 4.2 5 6"
+        \\}
+    );
+
+    try testing.expect(map.eql(reference_map));
+}
+
 test "plane" {
     //Create the arena allocator where we will allocate all of our working data
     var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);

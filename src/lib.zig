@@ -413,7 +413,71 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
             @panic("todo: vertex_array");
         },
         .decimal_array => {
-            @panic("todo: decimal_array");
+            //if the length of the string is 0,
+            if (property_string.len() == 0) {
+                //return a blank decimal array
+                return .{ .decimal_array = .{ .array = &[_]f64{} } };
+            }
+
+            var iterator = property_string.iterator();
+
+            var next: ?[]const u8 = iterator.next();
+
+            var array_length: usize = 1;
+
+            //iterate through once to get the amount of elements
+            while (next != null) {
+                var character: []const u8 = next.?;
+                if (ascii.isWhitespace(character[0])) {
+                    array_length += 1;
+                }
+
+                next = iterator.next();
+            }
+
+            var array: []f64 = try user_allocator.alloc(f64, array_length);
+
+            var element: usize = 0;
+
+            //reset the iterator
+            iterator.index = 0;
+            next = iterator.next();
+
+            var start_index: ?usize = null;
+
+            while (next != null) {
+                var character: []const u8 = next.?;
+                next = iterator.next();
+
+                //if we have not defined a start position, and we are at the end, then set the start position 1 char before the end
+                if (start_index == null and next == null) {
+                    start_index = iterator.index - 1;
+                }
+
+                //if we have reached the end, or we are at a whitespace
+                if (next == null or ascii.isWhitespace(character[0])) {
+                    //if its not null, that means we have hit a whitespace char, so go back 2 instead of 1
+                    var offset: usize = if (next == null) 0 else 2;
+
+                    var slice: []const u8 = property_string.buffer.?[start_index.? .. iterator.index - offset];
+
+                    array[element] = try std.fmt.parseFloat(f64, slice);
+                    element += 1;
+
+                    start_index = null;
+
+                    continue;
+                }
+
+                //if we arent at whitespace or the end, and the start index is null
+                if (start_index == null) {
+                    //mark 2 chars ago as the start of the number, as we grab next up above,
+                    //and we are always 1 char ahead of the index of the current char
+                    start_index = iterator.index - 2;
+                }
+            }
+
+            return .{ .decimal_array = .{ .array = array } };
         },
         .triangle_tag_array => {
             var array_length: usize = (property_string.len() - 1) / 2 + 1;
