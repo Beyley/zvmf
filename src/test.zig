@@ -117,6 +117,40 @@ test "decimal array" {
     try testing.expect(map.eql(reference_map));
 }
 
+test "int array" {
+    //Create the arena allocator where we will allocate all of our working data
+    var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_allocator.deinit();
+
+    const allocator = arena_allocator.allocator();
+
+    var reference_map: types.Map = try types.Map.init(allocator);
+
+    var reference_class: types.Class = try types.Class.init(allocator);
+    try reference_class.name.concat("allowed_verts");
+
+    var arr1: []i64 = try allocator.alloc(i64, 6);
+    arr1[0] = 0;
+    arr1[1] = -10;
+    arr1[2] = 105678;
+    arr1[3] = -14556788;
+    arr1[4] = 8743;
+    arr1[5] = 111;
+
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "10"), .value = .{ .int_array = .{ .array = arr1 } } });
+
+    try reference_map.classes.append(reference_class);
+
+    var map: types.Map = try lib.parseVmf(allocator,
+        \\allowed_verts
+        \\{
+        \\  "10" "0 -10 105678 -14556788 8743 111"
+        \\}
+    );
+
+    try testing.expect(map.eql(reference_map));
+}
+
 test "plane" {
     //Create the arena allocator where we will allocate all of our working data
     var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
