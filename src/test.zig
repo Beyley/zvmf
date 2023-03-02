@@ -151,6 +151,32 @@ test "int array" {
     try testing.expect(map.eql(reference_map));
 }
 
+test "vector 2d" {
+    //Create the arena allocator where we will allocate all of our working data
+    var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena_allocator.deinit();
+
+    const allocator = arena_allocator.allocator();
+
+    var reference_map: types.Map = try types.Map.init(allocator);
+
+    var reference_class: types.Class = try types.Class.init(allocator);
+    try reference_class.name.concat("editor");
+
+    try reference_class.properties.append(types.Property{ .name = try String.init_with_contents(allocator, "logicalpos"), .value = .{ .vector_2 = .{ .x = 157.3, .y = -679.1 } } });
+
+    try reference_map.classes.append(reference_class);
+
+    var map: types.Map = try lib.parseVmf(allocator,
+        \\editor
+        \\{
+        \\  "logicalpos" "[157.3 -679.1]"
+        \\}
+    );
+
+    try testing.expect(map.eql(reference_map));
+}
+
 test "plane" {
     //Create the arena allocator where we will allocate all of our working data
     var arena_allocator: std.heap.ArenaAllocator = std.heap.ArenaAllocator.init(std.heap.page_allocator);

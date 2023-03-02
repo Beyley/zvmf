@@ -572,7 +572,53 @@ fn parsePropertyValue(user_allocator: std.mem.Allocator, class_name: String, pro
             return .{.int_array = .{.array = array}};
         },
         .vector_2 => {
-            @panic("todo: vector_2");
+            var iterator = property_string.iterator();
+
+            var next: ?[]const u8 = iterator.next();
+
+            var vector: types.Vector2 = .{.x = 0, .y = 0};
+
+            var element: u4 = 0;
+
+            var start_index: ?usize = null;
+            while(next != null) {
+                var character: []const u8 = next.?;
+                next = iterator.next();
+
+                //if the character is a [,
+                if(character[0] == '[') {
+                    //skip it
+                    continue;
+                }
+
+                //if the next character is null or a space 
+                if(next == null or character[0] == ' ') {
+                    var slice: []const u8 = property_string.buffer.?[start_index.? .. iterator.index - if(next == null) @as(usize, 1) else @as(usize, 2)];
+
+                    var parsed: f64 = try std.fmt.parseFloat(f64, slice);
+                
+                    if(element == 0) {
+                        vector.x = parsed;
+                    } else {
+                        vector.y = parsed;
+                    }
+
+                    element += 1;
+
+                    if(element > 1) {
+                        break;
+                    }
+
+                    start_index = null;
+                    continue;
+                }
+
+                if(start_index == null) {
+                    start_index = iterator.index - 2;
+                }
+            }
+
+            return .{.vector_2 = vector};
         },
         .entity_output => {
             @panic("todo: entity_output");
